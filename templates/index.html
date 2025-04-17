@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Knowledge App</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #000; /* Black background */
+            color: #fff; /* White text */
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #fff; /* White text */
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #1a1a1a; /* Dark gray background for contrast */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1); /* Subtle white shadow */
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ccc; /* Light gray text */
+        }
+
+        input[type="file"],
+        button {
+            margin-bottom: 15px;
+            padding: 12px; /* Increased padding for larger buttons */
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="file"] {
+            background-color: #333; /* Dark gray background */
+            color: #fff; /* White text */
+        }
+
+        button {
+            background-color: #ff5722; /* Orange button color */
+            color: white;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #e64a19; /* Darker orange on hover */
+        }
+
+        button:disabled {
+            background-color: #555; /* Gray for disabled state */
+            cursor: not-allowed;
+        }
+
+        audio {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        #response {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #ccc; /* Light gray text */
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Book Knowledge App</h1>
+
+        <form id="uploadForm" method="POST" enctype="multipart/form-data" action="/upload">
+            <label for="pdf">Select PDF Book:</label>
+            <input type="file" name="pdf" accept=".pdf" required>
+
+            <label for="audio">Record Your Question:</label>
+            <button type="button" id="startBtn">Start Recording</button>
+            <button type="button" id="stopBtn" disabled>Stop Recording</button>
+
+            <audio id="player" controls></audio>
+
+            <button type="submit">Get Answer</button>
+        </form>
+
+        <div id="response"></div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById("startBtn");
+            const stopBtn = document.getElementById("stopBtn");
+            const player = document.getElementById("player");
+            const uploadForm = document.getElementById("uploadForm");
+            const responseDiv = document.getElementById("response");
+
+            if (!startBtn || !stopBtn || !player || !uploadForm || !responseDiv) {
+                console.error("One or more elements not found in the DOM.");
+                return;
+            }
+
+            startBtn.addEventListener("click", async () => {
+                console.log('Start Recording Button Clicked');
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    mediaRecorder = new MediaRecorder(stream);
+
+                    recordedChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        console.log('Recording Stopped');
+                        const audioBlob = new Blob(recordedChunks, { type: 'audio/wav' });
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        player.src = audioUrl;
+
+                        const audioFile = new File([audioBlob], "question.wav", { type: 'audio/wav' });
+
+                        // Remove any previous hidden audio inputs
+                        const oldInput = document.querySelector("input[name='audio']");
+                        if (oldInput) oldInput.remove();
+
+                        // Add audio input to form
+                        const audioInput = document.createElement("input");
+                        audioInput.type = "file";
+                        audioInput.name = "audio";
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(audioFile);
+                        audioInput.files = dataTransfer.files;
+                        audioInput.style.display = "none";
+                        uploadForm.appendChild(audioInput);
+                    };
+
+                    mediaRecorder.start();
+                    console.log('Recording started');
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                } catch (err) {
+                    console.error('Error with microphone access: ', err);
+                    alert('Error accessing microphone. Please check permissions and try again.');
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                }
+            });
+
+            stopBtn.addEventListener("click", () => {
+                console.log('Stop Recording Button Clicked');
+                if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                    mediaRecorder.stop();
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                }
+            });
+
+            uploadForm.addEventListener('submit', async (event) => {
+                event.preventDefault(); // Prevent default form submission
+                responseDiv.textContent = "Processing..."; // Show a message
+
+                const formData = new FormData(uploadForm);
+
+                try {
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Something went wrong');
+                    }
+
+                    const blob = await response.blob();
+                    const audioUrl = URL.createObjectURL(blob);
+                    player.src = audioUrl;
+                    player.play();
+                    responseDiv.textContent = ""; // Clear the "Processing..." message
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    responseDiv.textContent = `Error: ${error.message}`;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
