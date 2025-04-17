@@ -1,226 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Knowledge App</title>
-    <style>
-        /* General Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book Knowledge App</title>
+  <style>
+    :root {
+      --primary: #007bff;
+      --bg-light: #f7f9fc;
+      --bg-white: #ffffff;
+      --text-dark: #212529;
+      --border-color: #dee2e6;
+      --shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #000; /* Black background */
-            color: #fff; /* White text */
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        h1 {
-            font-size: 2rem;
-            color: #fff; /* White text */
-            margin-bottom: 20px;
-            text-align: center;
-        }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      padding: 40px 20px;
+    }
 
-        .container {
-            max-width: 600px;
-            width: 100%;
-            background: #1a1a1a; /* Dark gray background for contrast */
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1); /* Subtle white shadow */
-        }
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
 
-        form {
-            display: flex;
-            flex-direction: column;
-        }
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
 
-        label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #ccc; /* Light gray text */
-        }
+    header p {
+      font-size: 1.1rem;
+      color: #555;
+    }
 
-        input[type="file"],
-        button {
-            margin-bottom: 15px;
-            padding: 12px; /* Increased padding for larger buttons */
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+    .main-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: var(--bg-white);
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      display: flex;
+      gap: 40px;
+    }
 
-        input[type="file"] {
-            background-color: #333; /* Dark gray background */
-            color: #fff; /* White text */
-        }
+    .left, .right {
+      flex: 1;
+    }
 
-        button {
-            background-color: #ff5722; /* Orange button color */
-            color: white;
-            font-weight: bold;
-        }
+    .section {
+      margin-bottom: 30px;
+    }
 
-        button:hover {
-            background-color: #e64a19; /* Darker orange on hover */
-        }
+    .section h2 {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 5px;
+    }
 
-        button:disabled {
-            background-color: #555; /* Gray for disabled state */
-            cursor: not-allowed;
-        }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
 
-        audio {
-            margin-top: 15px;
-            width: 100%;
-        }
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      background-color: #fff;
+    }
 
-        #response {
-            margin-top: 20px;
-            font-size: 1rem;
-            color: #ccc; /* Light gray text */
-            text-align: center;
-        }
-    </style>
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .start-btn {
+      background-color: var(--primary);
+      color: #fff;
+    }
+
+    .stop-btn {
+      background-color: #6c757d;
+      color: #fff;
+    }
+
+    .submit-btn {
+      background-color: #28a745;
+      color: #fff;
+      width: 100%;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    #response {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #555;
+      text-align: center;
+    }
+  </style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>Book Knowledge App</h1>
 
-        <form id="uploadForm" method="POST" enctype="multipart/form-data" action="/upload">
-            <label for="pdf">Select PDF Book:</label>
-            <input type="file" name="pdf" accept=".pdf" required>
+  <header>
+    <h1>Book Knowledge App</h1>
+    <p>Upload a book and ask questions with your voice</p>
+  </header>
 
-            <label for="audio">Record Your Question:</label>
-            <button type="button" id="startBtn">Start Recording</button>
-            <button type="button" id="stopBtn" disabled>Stop Recording</button>
+  <div class="main-container">
+    <div class="left">
+      <form id="uploadForm" method="POST" enctype="multipart/form-data" action="/upload">
+        <div class="section">
+          <h2>📘 Upload Book</h2>
+          <label for="pdf">Select a PDF file:</label>
+          <input type="file" name="pdf" accept=".pdf" required>
+        </div>
 
-            <audio id="player" controls></audio>
+        <div class="section">
+          <h2>🎤 Record Question</h2>
+          <div class="button-group">
+            <button type="button" class="start-btn" id="startBtn">Start Recording</button>
+            <button type="button" class="stop-btn" id="stopBtn" disabled>Stop</button>
+          </div>
+          <audio id="player" controls></audio>
+        </div>
 
-            <button type="submit">Get Answer</button>
-        </form>
-
-        <div id="response"></div>
+        <div class="section">
+          <button type="submit" class="submit-btn">🔍 Get Answer</button>
+        </div>
+      </form>
     </div>
 
-    <script>
-        let mediaRecorder;
-        let recordedChunks = [];
+    <div class="right">
+      <div class="section">
+        <h2>🔊 Response</h2>
+        <div id="response">Your response will appear here after processing...</div>
+      </div>
+    </div>
+  </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const startBtn = document.getElementById("startBtn");
-            const stopBtn = document.getElementById("stopBtn");
-            const player = document.getElementById("player");
-            const uploadForm = document.getElementById("uploadForm");
-            const responseDiv = document.getElementById("response");
+  <script>
+    let mediaRecorder;
+    let recordedChunks = [];
 
-            if (!startBtn || !stopBtn || !player || !uploadForm || !responseDiv) {
-                console.error("One or more elements not found in the DOM.");
-                return;
-            }
+    document.addEventListener('DOMContentLoaded', () => {
+      const startBtn = document.getElementById("startBtn");
+      const stopBtn = document.getElementById("stopBtn");
+      const player = document.getElementById("player");
+      const uploadForm = document.getElementById("uploadForm");
+      const responseDiv = document.getElementById("response");
 
-            startBtn.addEventListener("click", async () => {
-                console.log('Start Recording Button Clicked');
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                    mediaRecorder = new MediaRecorder(stream);
+      startBtn.addEventListener("click", async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          recordedChunks = [];
 
-                    recordedChunks = [];
+          mediaRecorder.ondataavailable = e => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+          };
 
-                    mediaRecorder.ondataavailable = event => {
-                        if (event.data.size > 0) {
-                            recordedChunks.push(event.data);
-                        }
-                    };
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(recordedChunks, { type: 'audio/wav' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            player.src = audioUrl;
 
-                    mediaRecorder.onstop = () => {
-                        console.log('Recording Stopped');
-                        const audioBlob = new Blob(recordedChunks, { type: 'audio/wav' });
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        player.src = audioUrl;
+            const audioFile = new File([audioBlob], "question.wav", { type: 'audio/wav' });
 
-                        const audioFile = new File([audioBlob], "question.wav", { type: 'audio/wav' });
+            const oldInput = document.querySelector("input[name='audio']");
+            if (oldInput) oldInput.remove();
 
-                        // Remove any previous hidden audio inputs
-                        const oldInput = document.querySelector("input[name='audio']");
-                        if (oldInput) oldInput.remove();
+            const audioInput = document.createElement("input");
+            audioInput.type = "file";
+            audioInput.name = "audio";
+            const dt = new DataTransfer();
+            dt.items.add(audioFile);
+            audioInput.files = dt.files;
+            audioInput.style.display = "none";
+            uploadForm.appendChild(audioInput);
+          };
 
-                        // Add audio input to form
-                        const audioInput = document.createElement("input");
-                        audioInput.type = "file";
-                        audioInput.name = "audio";
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(audioFile);
-                        audioInput.files = dataTransfer.files;
-                        audioInput.style.display = "none";
-                        uploadForm.appendChild(audioInput);
-                    };
+          mediaRecorder.start();
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+        } catch (err) {
+          alert("Microphone access failed.");
+        }
+      });
 
-                    mediaRecorder.start();
-                    console.log('Recording started');
-                    startBtn.disabled = true;
-                    stopBtn.disabled = false;
-                } catch (err) {
-                    console.error('Error with microphone access: ', err);
-                    alert('Error accessing microphone. Please check permissions and try again.');
-                    startBtn.disabled = false;
-                    stopBtn.disabled = true;
-                }
-            });
+      stopBtn.addEventListener("click", () => {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+        }
+      });
 
-            stopBtn.addEventListener("click", () => {
-                console.log('Stop Recording Button Clicked');
-                if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                    mediaRecorder.stop();
-                    startBtn.disabled = false;
-                    stopBtn.disabled = true;
-                }
-            });
+      uploadForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        responseDiv.textContent = "Processing...";
 
-            uploadForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Prevent default form submission
-                responseDiv.textContent = "Processing..."; // Show a message
+        const formData = new FormData(uploadForm);
+        try {
+          const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+          });
 
-                const formData = new FormData(uploadForm);
+          if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || "Upload failed");
+          }
 
-                try {
-                    const response = await fetch('/upload', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.error || 'Something went wrong');
-                    }
-
-                    const blob = await response.blob();
-                    const audioUrl = URL.createObjectURL(blob);
-                    player.src = audioUrl;
-                    player.play();
-                    responseDiv.textContent = ""; // Clear the "Processing..." message
-                } catch (error) {
-                    console.error('Error submitting form:', error);
-                    responseDiv.textContent = `Error: ${error.message}`;
-                }
-            });
-        });
-    </script>
+          const blob = await response.blob();
+          const audioUrl = URL.createObjectURL(blob);
+          player.src = audioUrl;
+          player.play();
+          responseDiv.textContent = "";
+        } catch (error) {
+          responseDiv.textContent = "Error: " + error.message;
+        }
+      });
+    });
+  </script>
 </body>
-
 </html>
